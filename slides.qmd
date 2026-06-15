@@ -1,0 +1,85 @@
+---
+title: "Sasquatch Statistics: Spatial Point Regression with R"
+author: "Melissa Bather"
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    background-image: img/main_background.png
+title-slide-attributes: 
+  data-background-image: img/bigfoot_cover.png
+---
+
+## Hello :)
+
+Some things about me:
+
+- My name is Melissa
+- I am from New Zealand (not Australia)
+- I like statistics
+- I have a personal site here: statisticsmelissa.netlify.app
+
+## R-Ladies Vancouver! - need to fix this slide
+
+::: {.columns}
+
+::: {.column width="50%"}
+![](img/rladies.png){width=400}
+:::
+
+::: {.column width="50%"}
+https://www.meetup.com/r-ladies-vancouver/
+:::
+
+:::
+
+## Assumptions
+
+:::: {.columns}
+
+::: {.column width="70%"}
+
+- Bigfoot is real
+- There is more than one bigfoot (bigfeet?)
+- TO DO: add assumption
+
+:::
+
+::: {.column width="30%"}
+
+![](img/tinfoil_hat.png){width=300}
+
+:::
+
+::::
+
+# Definitions
+
+## Spatial point process
+
+*A mathematical model that describes the distribution of events that occur in space.*
+
+For example:
+
+- Tree locations in a forest
+- Road accident locations
+- Locations of crime
+- Animal locations
+- Bigfoot sightings
+
+* to do add photo of map *
+
+## Poisson point processes
+
+### Homogeneous
+
+Points/events have a uniform probability of occurring anywhere in space. *insert pic of homogeneous sightings*
+
+### Inhomogeneous
+
+Points/events vary in intensity across space, depending on variables. For bigfoot sightings, this could be based on proximity to food sources, tree cover, or the number of bigfoot believers who live nearby. *insert pic of inhomogeneous sightings*
+
+## References
+
+https://www.sciencedirect.com/science/chapter/bookseries/abs/pii/S0076695X08602550
+
+Clifford, P. (1994). Monte Carlo methods. In J. L. Stanford & S. B. Vardeman (Eds.), Methods in experimental physics (Vol. 28, pp. 125–153). Academic Press. https://doi.org/10.1016/S0076-695X(08)60255-0 [double check this is correct citation]

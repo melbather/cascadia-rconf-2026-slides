@@ -1,0 +1,20 @@
+/*-- scss:defaults --*/
+@import url('https://fonts.googleapis.com/css2?family=Changa+One:ital@0;1&display=swap');
+
+$presentation-heading-font: "Changa One", sans-serif;
+
+/*-- scss:rules --*/
+.reveal .quarto-title-block .title,
+.reveal .title-slide h1,
+.reveal .title-slide .title {
+  font-family: "Changa One", sans-serif !important;
+  color: #FFFFFF !important; 
+  text-shadow: 4px 4px 0px #264653;
+}
+
+.reveal .quarto-title-block .author,
+.reveal .quarto-title-block .quarto-title-author-name {
+  font-family: "Changa One", sans-serif !important;
+  color: #FFFFFF !important;
+  text-shadow: 4px 4px 0px #264653;
+}
