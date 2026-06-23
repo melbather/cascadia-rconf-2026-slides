@@ -27,10 +27,15 @@ Some things about me:
 :::
 
 ::: {.column width="50%"}
-https://www.meetup.com/r-ladies-vancouver/
+https://www.meetup.com/r-ladies-vancouver/ - add QR code
 :::
 
 :::
+
+## The idea
+
+![](img/bigfoot-app.png)
+
 
 ## Assumptions
 
@@ -38,9 +43,10 @@ https://www.meetup.com/r-ladies-vancouver/
 
 ::: {.column width="70%"}
 
+- Sasquatch = bigfoot
+- Definition (according to Wikipedia): *a large, hairy, mythical humanoid creature said to inhabit forests in North America, particularly in the Pacific Northwest*
 - Bigfoot is real
 - There is more than one bigfoot (bigfeet?)
-- TO DO: add assumption
 
 :::
 
@@ -56,6 +62,11 @@ https://www.meetup.com/r-ladies-vancouver/
 
 ## Spatial point process
 
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
 *A mathematical model that describes the distribution of events that occur in space.*
 
 For example:
@@ -66,20 +77,275 @@ For example:
 - Animal locations
 - Bigfoot sightings
 
-* to do add photo of map *
+* to do change dots to tree icon*
 
-## Poisson point processes
+:::
+
+::: {.column width="50%"}
+
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: 100%
+library(sf)
+library(ggplot2)
+library(spatstat.geom)
+library(spatstat.random)
+
+set.seed(42)
+study_region <- st_as_sf(
+  st_sfc(st_polygon(list(rbind(
+    c(0, 0), c(10, 0), c(10, 10), c(0, 10), c(0, 0)
+  ))))
+)
+
+window <- owin(xrange = c(0, 10), yrange = c(0, 10))
+points_ppp <- rpoispp(lambda = 1.5, win = window)
+
+points_sf <- st_as_sf(
+  data.frame(
+    x = points_ppp$x,
+    y = points_ppp$y
+  ),
+  coords = c("x", "y")
+)
+
+ggplot() +
+  geom_sf(data = study_region, fill = "white", color = "black", linewidth = 1) +
+  geom_sf(data = points_sf, size = 3, alpha = 0.8, colour = "darkgreen") +
+  coord_sf(expand = FALSE) +
+  theme_void()
+```
+
+:::
+
+::::
+
+
+## Poisson point processes (need to fix plot margins + add limitations) {.smaller}
 
 ### Homogeneous
 
-Points/events have a uniform probability of occurring anywhere in space. *insert pic of homogeneous sightings*
+:::: {.columns}
+
+::: {.column width="80%"}
+
+Points/events have a uniform probability of occurring anywhere in space.
+
+Intensity: $\lambda(s) = \lambda$, where $s$ is a location in space.
+
+:::
+
+::: {.column width="20%"}
+
+```{r}
+#| fig-width: 3
+#| fig-height: 3
+#| out-width: 100%
+#| fig-align: center
+library(ggplot2)
+library(grid)
+library(gridExtra)
+set.seed(123)
+x1 <- rep(1:100)
+y1 <- runif(100, 0, 1)
+inhom <- rpoint(100, f = function(x, y) {y = exp(5*x)}, fmax = 100)
+x2 <- inhom$x*100
+y2 <- inhom$y
+homogeneous <- data.frame(x1, y1)
+inhomogeneous <- data.frame(x2, y2)
+ggplot(homogeneous, aes(x1, y1)) +
+  theme(panel.background = element_rect(fill = "#5ab06e"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.x=element_blank(),
+      axis.ticks.x=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks.y=element_blank(),
+      plot.margin = margin(0, 0, 0, 0)) +
+  xlab("") +
+  ylab("") +
+  geom_point()
+```
+
+:::
+
+::::
+
+:::: {.columns}
+
+::: {.column width="80%"}
 
 ### Inhomogeneous
 
-Points/events vary in intensity across space, depending on variables. For bigfoot sightings, this could be based on proximity to food sources, tree cover, or the number of bigfoot believers who live nearby. *insert pic of inhomogeneous sightings*
+Points/events vary in intensity across space, depending on variables. For bigfoot sightings, this could be based on proximity to food sources, tree cover, or the number of bigfoot believers who live nearby. 
 
-## References
+Intensity: $\lambda(s) = \exp(\beta_0 + \beta_1x_1(s) + ... + \beta_px_p(s))$, where $x_i(s)$ is a predictor and $\beta_i$ are the estimated effects.
+
+:::
+
+::: {.column width="20%"}
+
+```{r}
+#| fig-width: 3
+#| fig-height: 3
+#| out-width: 100%
+#| fig-align: center
+g <- rasterGrob(blues9, width=unit(1,"npc"), height = unit(1,"npc"), 
+interpolate = TRUE) 
+g2 <- rasterGrob(matrix(c("#8dd99f", "#66b077","#5ab06e","#1a3d22"), nrow = 1), 
+                width=unit(1,"npc"), height = unit(1,"npc"), 
+                interpolate = TRUE)
+ggplot(inhomogeneous, aes(x2, y2)) +
+  annotation_custom(g2, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
+  theme(axis.text.x=element_blank(),
+      axis.ticks.x=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks.y=element_blank(),
+      plot.margin = margin(0, 0, 0, 0)) +
+  xlab("") +
+  ylab("") +
+  geom_point()
+```
+
+:::
+
+::::
+
+# Data Sources
+
+## Option 1: {.smaller}
+#### North American Wood Ape Conservancy's Encounter Reports Database 
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+![](img/NAWAC.png){width=500}
+
+Found at: https://reports.woodape.org/data/
+
+:::
+
+::: {.column width="50%"}
+
+**Pros:**
+
+- Easy to scrape (I have a simple script here: https://github.com/melbather/bigfoot-app/blob/main/bigfoot-app/global.R)
+- Tidy
+
+**Cons:**
+
+- Heavily biased towards Texas (or maybe there are just more bigfeet in Texas?)
+- Small dataset compared to other options (currently at 506 entries)
+
+:::
+
+::::
+
+## Option 2: {.smaller}
+#### The Bigfoot Field Researchers Organization (BFRO)
+
+:::: {.columns}
+
+::: {.column width="40%"}
+
+![](img/bfro.png){width=500}
+
+Found at: https://www.bfro.net/
+
+:::
+
+::: {.column width="60%"}
+
+**Pros:**
+
+- Other people have already scraped the dataset
+  - https://github.com/timothyrenner/bfro_sightings_data
+  - https://www.kaggle.com/datasets/mexwell/bigfoot-sightings
+- Lots of covariate information available in the Kaggle dataset
+- Larger number of sightings (4309 in the Kaggle dataset above)
+
+**Cons:**
+
+- Scary-looking website
+- Dataset upated two years ago
+
+:::
+
+::::
+
+## The BFRO Dataset
+
+The Kaggle dataset from Kaggle user Mexwell includes a geocoded file that contains the following columns:
+
+```{r}
+#| echo: true
+bfro_data <- read.csv("data/bfro_reports_geocoded.csv")
+names(bfro_data)
+```
+
+## The BFRO Dataset
+
+There is some missing data, but there is still a lot to work with
+
+```{r}
+#| echo: true
+summary(bfro_data)
+```
+
+## The BFRO Dataset
+
+Let's plot the data
+
+```{r}
+#| echo: false
+library(leaflet)
+
+leaflet(bfro_data) |>
+      addTiles() |>
+      addMarkers(lng = ~longitude, 
+                 lat = ~latitude, 
+                 popup = ~paste("County:", county, 
+                                "<br>State:", state,
+                                "<br>Date:", date,
+                                "<br>Summary:", observed),
+                 icon = makeIcon(
+                   iconUrl = "https://cdn.iconscout.com/icon/premium/png-256-thumb/bigfoot-icon-svg-png-download-2227694.png",
+                   iconWidth = 35, iconHeight = 35
+                 ))
+```
+
+## The BFRO Dataset
+
+Let's plot the data (in a more practical way)
+
+```{r}
+#| echo: false
+leaflet(bfro_data) |>
+      addTiles() |>
+      addCircleMarkers(lng = ~longitude, 
+                 lat = ~latitude, 
+                 popup = ~paste("County:", county, 
+                                "<br>State:", state,
+                                "<br>Date:", date,
+                                "<br>Summary:", observed),
+                 fillOpacity = 0.7,
+                 stroke = FALSE,
+                 radius = 4)
+```
+
+## References (to be formatted) {.smaller}
 
 https://www.sciencedirect.com/science/chapter/bookseries/abs/pii/S0076695X08602550
 
 Clifford, P. (1994). Monte Carlo methods. In J. L. Stanford & S. B. Vardeman (Eds.), Methods in experimental physics (Vol. 28, pp. 125–153). Academic Press. https://doi.org/10.1016/S0076-695X(08)60255-0 [double check this is correct citation]
+
+https://en.wikipedia.org/wiki/Bigfoot
+
+https://reports.woodape.org/data/
+
+https://www.leman.stat.vt.edu/VTCourses/BaddeleyPointProcesses.pdf
+
+https://www.bfro.net/
