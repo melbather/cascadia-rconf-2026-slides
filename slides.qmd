@@ -17,24 +17,25 @@ Some things about me:
 - I am from New Zealand (not Australia)
 - I like statistics
 - I have a personal site here: statisticsmelissa.netlify.app
+- Code for this presentation can be found here: https://github.com/melbather/bigfoot-grid-sim
 
-## R-Ladies Vancouver! - need to fix this slide
+## R-Ladies Vancouver!
 
-::: {.columns}
+::: {.columns .align-items-center}
 
 ::: {.column width="50%"}
 ![](img/rladies.png){width=400}
 :::
 
-::: {.column width="50%"}
-https://www.meetup.com/r-ladies-vancouver/ - add QR code
+::: {.column width="50%" .absolute top=250 right=30}
+https://www.meetup.com/r-ladies-vancouver/ 
 :::
 
 :::
 
 ## The idea
 
-![](img/bigfoot-app.png)
+![](img/bigfoot-app.png){fig-align="center"}
 
 
 ## Assumptions
@@ -76,8 +77,6 @@ For example:
 - Locations of crime
 - Animal locations
 - Bigfoot sightings
-
-* to do change dots to tree icon*
 
 :::
 
@@ -123,7 +122,7 @@ ggplot() +
 ::::
 
 
-## Poisson point processes (need to fix plot margins + add limitations) {.smaller}
+## Poisson point processes {.smaller}
 
 ### Homogeneous
 
@@ -336,16 +335,182 @@ leaflet(bfro_data) |>
                  radius = 4)
 ```
 
-## References (to be formatted) {.smaller}
 
-https://www.sciencedirect.com/science/chapter/bookseries/abs/pii/S0076695X08602550
+# Analysis!
 
-Clifford, P. (1994). Monte Carlo methods. In J. L. Stanford & S. B. Vardeman (Eds.), Methods in experimental physics (Vol. 28, pp. 125–153). Academic Press. https://doi.org/10.1016/S0076-695X(08)60255-0 [double check this is correct citation]
+## Cleaning data
 
-https://en.wikipedia.org/wiki/Bigfoot
+Remove the nonsensical ocean bigfeet and only include observations where latitude and longitude are known
 
-https://reports.woodape.org/data/
+```{r}
+#| echo: true
+library(dplyr)
 
-https://www.leman.stat.vt.edu/VTCourses/BaddeleyPointProcesses.pdf
+bfro_data_clean <- bfro_data |> 
+  filter(
+    !(county == "Cowlitz County" & date == "2006-07-05"),
+    !(county == "Flathead County" & date == "2012-09-16"),
+    !(county == "Idaho County" & date == "2013-12-04"),
+    !is.na(latitude),
+    !is.na(longitude)
+    ) |> 
+  mutate(
+    rain = grepl("rain", precip_type),
+    snow = grepl("snow", precip_type)
+  )
+```
 
-https://www.bfro.net/
+## `spatstat` package
+
+https://spatstat.org/
+
+https://cran.r-project.org/web/packages/spatstat/index.html
+
+```{r}
+#| output: false
+#| echo: true
+# install.packages("spatstat")
+library(spatstat)
+```
+
+## Decide on our variables of interest
+
+Which variables are likely to influence bigfoot sightings?
+
+My hypothesis: temperature, precipitation (rain and snow), and visibility. 
+
+## Problem
+
+Covariate information needs to be known across the study area, not just at each sighting location. We are going to cheat for the purpose of this demonstration and simulate information when it isn't known.
+
+Full code here: https://github.com/melbather/bigfoot-grid-sim
+
+## Create a study window
+
+This is telling R what our study area is. We are using the full geographic range of the sightings in the dataset, but we could also subset the data and define a smaller study area, like the PNW. 
+
+```{r}
+#| echo: true
+W <- owin(
+    xrange = range(bfro_data_clean$longitude),
+    yrange = range(bfro_data_clean$latitude)
+  )
+```
+
+## Create a point pattern
+
+From the `spatstat` vignette: the `ppp` function *creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane*.
+
+```{r}
+#| echo: true
+bigfoot_pp <- ppp(
+  x = bfro_data_clean$longitude,
+  y = bfro_data_clean$latitude,
+  window = W
+)
+```
+
+Here, each sighting becomes a point in space.
+
+# ✨Simulation magic✨
+*Unfortunately out of scope for this presentation, but you can see what I did in the GitHub repo*
+
+## Inhomogeneous Poisson Point Model
+
+```{r}
+#| echo: false
+library(googledrive)
+drive_deauth()
+
+dest <- "data/bigfoot-model-results.RData"
+dir.create("data", showWarnings = FALSE)
+
+if (!file.exists(dest) || file.info(dest)$size < 1e6) {
+  drive_download(
+    file = as_id("1el3JR-bzZA3mvjyYJJ6v7_Ex9TTCltL4"),
+    path = dest,
+    overwrite = TRUE
+  )
+}
+
+load(dest)
+```
+
+```{r}
+#| echo: false
+# load("data/bigfoot-model-results.RData")
+```
+
+```{r}
+#| echo: true
+bigfoot_ipp <- ppm(
+  bigfoot_pp ~ temperature_mid +
+       precip_intensity +
+       rain +
+       snow +
+       visibility,
+  covariates = list(
+    temperature_mid = temperature_mid,
+    precip_intensity = precip_intensity,
+    rain = rain,
+    snow = snow,
+    visibility = visibility
+  )
+)
+```
+
+## Interpreting the results {.smaller}
+
+Our hypothesised equation is: $\lambda(s) = \exp(\beta_0 + \beta_1 \times$ `temperature_mid` $+ \beta_2 \times$ `precip_intensity` $+ \beta_3 \times$ `rain` $+ \beta_4 \times$ `snow` $+ \beta_5 \times$ `visibility` $)$
+
+```{r}
+#| echo: true
+data.frame(
+  Covariate = names(coef(bigfoot_ipp)),
+  Beta = coef(bigfoot_ipp),
+  ExpBeta = exp(coef(bigfoot_ipp)),
+  row.names = NULL
+)
+```
+
+The `ExpBeta` column shows the multiplicative effect that a covariate has on a sighting. The only value in this column above 1 is the coefficient for `snow`. Could that be due to color contrast?
+
+Perhaps, the better the conditions are, the worse the chances of a sighting... (*but it also pays to remember that we simulated covariates here, and my script probably doesn't do the best job of that*).
+
+## Limitations of the inhomogeneous Poisson point process
+
+- Events are assumed to occur independently (unrealistic).
+- Clustering is assumed to be explained by model covariates only.
+- Assumes the variance = mean. Real spatial data often show variance > mean.
+- A better option is to use Log-Gaussian Cox Processes (LGCP), but that is out of the scope of this presentation. 
+
+
+## Further analysis
+
+- Subset sightings by classfication (e.g. only look at Class A sightings).
+- Subset by state or only look at PNW.
+- Join the BFRO dataset to other datasets that give us information about education levels of the county or prevalence of belief in conspiracy theories.
+
+## References {.smaller}
+
+1. Baddeley A., Rubak E., Turner R. (2015). *Spatial Point Patterns: Methodology and Applications with R*. Chapman and Hall/CRC Press, London. https://www.routledge.com/Spatial-Point-Patterns-Methodology-and-Applications-with-R/Baddeley-Rubak-Turner/p/book/9781482210200/.
+
+2. Bigfoot. (2026, June 17). In *Wikipedia* https://en.wikipedia.org/wiki/Bigfoot
+
+3. Finsterwald, M. (2024). *Bigfoot Sightings*. Kaggle. https://www.kaggle.com/datasets/mexwell/bigfoot-sightings
+
+4. North American Wood Ape Conservancy. (2026, April 6). *Encounter Reports Database*. https://reports.woodape.org/data/. https://www.bfro.net/
+
+5. Renner, T. (2024, April 23). *BFRO Sightings Data*. GitHub. https://github.com/timothyrenner/bfro_sightings_data
+
+6. The Bigfoot Field Researchersw Organization. (2026, June 13). *Geographic Database of Bigfoot / Sasquatch Sightings & Reports* https://www.bfro.net/
+
+*Presentation made with Quarto*
+
+
+
+
+
+
+
+
