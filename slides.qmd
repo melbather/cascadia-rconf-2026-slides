@@ -4,12 +4,13 @@ author: "Melissa Bather"
 format:
   revealjs:
     theme: [default, custom.scss]
-    background-image: img/main_background.png
+    background-image: url("img/main_background.png")
+    output-file: index.html
 title-slide-attributes: 
   data-background-image: img/bigfoot_cover.png
 ---
 
-## Hello :)
+## Hello :) {background-image="img/main_background.png"}
 
 Some things about me:
 
@@ -19,7 +20,7 @@ Some things about me:
 - I have a personal site here: statisticsmelissa.netlify.app
 - Code for this presentation can be found here: https://github.com/melbather/bigfoot-grid-sim
 
-## R-Ladies Vancouver!
+## R-Ladies Vancouver! {background-image="img/main_background.png"}
 
 ::: {.columns .align-items-center}
 
@@ -33,12 +34,12 @@ https://www.meetup.com/r-ladies-vancouver/
 
 :::
 
-## The idea
+## The idea {background-image="img/main_background.png"}
 
 ![](img/bigfoot-app.png){fig-align="center"}
 
 
-## Assumptions
+## Assumptions {background-image="img/main_background.png"}
 
 :::: {.columns}
 
@@ -59,9 +60,9 @@ https://www.meetup.com/r-ladies-vancouver/
 
 ::::
 
-# Definitions
+# Definitions {background-image="img/main_background.png"}
 
-## Spatial point process
+## Spatial point process {background-image="img/main_background.png"}
 
 
 :::: {.columns}
@@ -122,7 +123,7 @@ ggplot() +
 ::::
 
 
-## Poisson point processes {.smaller}
+## Poisson point processes {background-image="img/main_background.png" .smaller}
 
 ### Homogeneous
 
@@ -212,9 +213,9 @@ ggplot(inhomogeneous, aes(x2, y2)) +
 
 ::::
 
-# Data Sources
+# Data Sources {background-image="img/main_background.png"}
 
-## Option 1: {.smaller}
+## Option 1: {background-image="img/main_background.png" .smaller}
 #### North American Wood Ape Conservancy's Encounter Reports Database 
 
 :::: {.columns}
@@ -243,7 +244,7 @@ Found at: https://reports.woodape.org/data/
 
 ::::
 
-## Option 2: {.smaller}
+## Option 2: {background-image="img/main_background.png" .smaller}
 #### The Bigfoot Field Researchers Organization (BFRO)
 
 :::: {.columns}
@@ -275,7 +276,7 @@ Found at: https://www.bfro.net/
 
 ::::
 
-## The BFRO Dataset
+## The BFRO Dataset {background-image="img/main_background.png"}
 
 The Kaggle dataset from Kaggle user Mexwell includes a geocoded file that contains the following columns:
 
@@ -294,7 +295,7 @@ There is some missing data, but there is still a lot to work with
 summary(bfro_data)
 ```
 
-## The BFRO Dataset
+## The BFRO Dataset {background-image="img/main_background.png"}
 
 Let's plot the data
 
@@ -316,7 +317,7 @@ leaflet(bfro_data) |>
                  ))
 ```
 
-## The BFRO Dataset
+## The BFRO Dataset {background-image="img/main_background.png"}
 
 Let's plot the data (in a more practical way)
 
@@ -336,9 +337,9 @@ leaflet(bfro_data) |>
 ```
 
 
-# Analysis!
+# Analysis! {background-image="img/main_background.png"}
 
-## Cleaning data
+## Cleaning data {background-image="img/main_background.png"}
 
 Remove the nonsensical ocean bigfeet and only include observations where latitude and longitude are known
 
@@ -360,7 +361,7 @@ bfro_data_clean <- bfro_data |>
   )
 ```
 
-## `spatstat` package
+## `spatstat` package {background-image="img/main_background.png"}
 
 https://spatstat.org/
 
@@ -373,19 +374,19 @@ https://cran.r-project.org/web/packages/spatstat/index.html
 library(spatstat)
 ```
 
-## Decide on our variables of interest
+## Decide on our variables of interest {background-image="img/main_background.png"}
 
 Which variables are likely to influence bigfoot sightings?
 
 My hypothesis: temperature, precipitation (rain and snow), and visibility. 
 
-## Problem
+## Problem {background-image="img/main_background.png"}
 
 Covariate information needs to be known across the study area, not just at each sighting location. We are going to cheat for the purpose of this demonstration and simulate information when it isn't known.
 
 Full code here: https://github.com/melbather/bigfoot-grid-sim
 
-## Create a study window
+## Create a study window {background-image="img/main_background.png"}
 
 This is telling R what our study area is. We are using the full geographic range of the sightings in the dataset, but we could also subset the data and define a smaller study area, like the PNW. 
 
@@ -397,7 +398,7 @@ W <- owin(
   )
 ```
 
-## Create a point pattern
+## Create a point pattern {background-image="img/main_background.png"}
 
 From the `spatstat` vignette: the `ppp` function *creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane*.
 
@@ -412,10 +413,10 @@ bigfoot_pp <- ppp(
 
 Here, each sighting becomes a point in space.
 
-# ✨Simulation magic✨
+# ✨Simulation magic✨ {background-image="img/main_background.png"}
 *Unfortunately out of scope for this presentation, but you can see what I did in the GitHub repo*
 
-## Inhomogeneous Poisson Point Model
+## Inhomogeneous Poisson Point Model {background-image="img/main_background.png"}
 
 ```{r}
 #| echo: false
@@ -437,11 +438,6 @@ load(dest)
 ```
 
 ```{r}
-#| echo: false
-# load("data/bigfoot-model-results.RData")
-```
-
-```{r}
 #| echo: true
 bigfoot_ipp <- ppm(
   bigfoot_pp ~ temperature_mid +
@@ -459,7 +455,7 @@ bigfoot_ipp <- ppm(
 )
 ```
 
-## Interpreting the results {.smaller}
+## Interpreting the results {background-image="img/main_background.png" .smaller}
 
 Our hypothesised equation is: $\lambda(s) = \exp(\beta_0 + \beta_1 \times$ `temperature_mid` $+ \beta_2 \times$ `precip_intensity` $+ \beta_3 \times$ `rain` $+ \beta_4 \times$ `snow` $+ \beta_5 \times$ `visibility` $)$
 
@@ -477,7 +473,7 @@ The `ExpBeta` column shows the multiplicative effect that a covariate has on a s
 
 Perhaps, the better the conditions are, the worse the chances of a sighting... (*but it also pays to remember that we simulated covariates here, and my script probably doesn't do the best job of that*).
 
-## Limitations of the inhomogeneous Poisson point process
+## Limitations of the inhomogeneous Poisson point process {background-image="img/main_background.png"}
 
 - Events are assumed to occur independently (unrealistic).
 - Clustering is assumed to be explained by model covariates only.
@@ -485,13 +481,13 @@ Perhaps, the better the conditions are, the worse the chances of a sighting... (
 - A better option is to use Log-Gaussian Cox Processes (LGCP), but that is out of the scope of this presentation. 
 
 
-## Further analysis
+## Further analysis {background-image="img/main_background.png"}
 
 - Subset sightings by classfication (e.g. only look at Class A sightings).
 - Subset by state or only look at PNW.
 - Join the BFRO dataset to other datasets that give us information about education levels of the county or prevalence of belief in conspiracy theories.
 
-## References {.smaller}
+## References {background-image="img/main_background.png" .smaller}
 
 1. Baddeley A., Rubak E., Turner R. (2015). *Spatial Point Patterns: Methodology and Applications with R*. Chapman and Hall/CRC Press, London. https://www.routledge.com/Spatial-Point-Patterns-Methodology-and-Applications-with-R/Baddeley-Rubak-Turner/p/book/9781482210200/.
 
