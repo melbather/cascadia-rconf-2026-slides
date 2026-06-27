@@ -390,7 +390,7 @@ Melissa Bather
 </div>
 </div>
 </section>
-<section id="the-bfro-dataset-1" class="slide level2">
+<section id="the-bfro-dataset-1" class="slide level2" data-background-image="img/main_background.png">
 <h2>The BFRO Dataset</h2>
 <p>There is some missing data, but there is still a lot to work with</p>
 <div class="cell">
@@ -522,11 +522,6 @@ Melissa Bather
 <p>Which variables are likely to influence bigfoot sightings?</p>
 <p>My hypothesis: temperature, precipitation (rain and snow), and visibility.</p>
 </section>
-<section id="problem" class="slide level2" data-background-image="img/main_background.png">
-<h2>Problem</h2>
-<p>Covariate information needs to be known across the study area, not just at each sighting location. We are going to cheat for the purpose of this demonstration and simulate information when it isn’t known.</p>
-<p>Full code here: https://github.com/melbather/bigfoot-grid-sim</p>
-</section>
 <section id="create-a-study-window" class="slide level2" data-background-image="img/main_background.png">
 <h2>Create a study window</h2>
 <p>This is telling R what our study area is. We are using the full geographic range of the sightings in the dataset, but we could also subset the data and define a smaller study area, like the PNW.</p>
@@ -536,6 +531,11 @@ Melissa Bather
 <span id="cb7-3"><a href=""></a>    <span class="at">yrange =</span> <span class="fu">range</span>(bfro_data_clean<span class="sc">$</span>latitude)</span>
 <span id="cb7-4"><a href=""></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+</section>
+<section id="problem" class="slide level2" data-background-image="img/main_background.png">
+<h2>Problem</h2>
+<p>Covariate information needs to be known across the study area, not just at each sighting location. We are going to cheat for the purpose of this demonstration and simulate information when it isn’t known.</p>
+<p>Full code here: https://github.com/melbather/bigfoot-grid-sim</p>
 </section>
 <section id="create-a-point-pattern" class="slide level2" data-background-image="img/main_background.png">
 <h2>Create a point pattern</h2>
@@ -593,8 +593,8 @@ Melissa Bather
 6       visibility  -0.581269444 5.591881e-01</code></pre>
 </div>
 </div>
-<p>The <code>ExpBeta</code> column shows the multiplicative effect that a covariate has on a sighting. The only value in this column above 1 is the coefficient for <code>snow</code>. Could that be due to color contrast?</p>
-<p>Perhaps, the better the conditions are, the worse the chances of a sighting… (<em>but it also pays to remember that we simulated covariates here, and my script probably doesn’t do the best job of that</em>).</p>
+<p>The <code>ExpBeta</code> column shows the multiplicative effect that a covariate has on sighting intensity. The only value in this column above 1 is the coefficient for <code>snow</code>. Could that be due to color contrast?</p>
+<p>Perhaps, the better the conditions are, the lower the intensity of sightings… (<em>but it also pays to remember that we simulated covariates here, and my script probably doesn’t do the best job of that</em>).</p>
 </section>
 <section id="limitations-of-the-inhomogeneous-poisson-point-process" class="slide level2" data-background-image="img/main_background.png">
 <h2>Limitations of the inhomogeneous Poisson point process</h2>
